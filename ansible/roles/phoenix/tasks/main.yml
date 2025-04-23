@@ -1,0 +1,70 @@
+```yaml
+---
+- name: Create deployment directory
+  file:
+    path: /opt/{{ app_name }}
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Clone application repository
+  git:
+    repo: https://github.com/yourusername/{{ app_name }}.git
+    dest: /opt/{{ app_name }}
+    version: main
+  become: yes
+  become_user: ubuntu
+
+- name: Create release environment file
+  template:
+    src: prod.env.j2
+    dest: /opt/{{ app_name }}/prod.env
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'
+
+- name: Install dependencies
+  shell: |
+    cd /opt/{{ app_name }} && \
+    mix deps.get --only prod
+  become: yes
+  become_user: ubuntu
+
+- name: Install Node.js dependencies
+  shell: |
+    cd /opt/{{ app_name }}/assets && \
+    npm install
+  become: yes
+  become_user: ubuntu
+
+- name: Compile assets
+  shell: |
+    cd /opt/{{ app_name }} && \
+    mix assets.deploy
+  environment:
+    MIX_ENV: prod
+  become: yes
+  become_user: ubuntu
+
+- name: Create release
+  shell: |
+    cd /opt/{{ app_name }} && \
+    mix phx.gen.release && \
+    MIX_ENV=prod mix release
+  become: yes
+  become_user: ubuntu
+
+- name: Create systemd service
+  template:
+    src: phoenix.service.j2
+    dest: /etc/systemd/system/{{ app_name }}.service
+  notify: reload systemd
+
+- name: Enable and start Phoenix service
+  systemd:
+    name: "{{ app_name }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes
+```

@@ -1,0 +1,16 @@
+```yaml
+---
+- name: Install essential packages
+  apt:
+    name:
+      - build-essential
+      - git
+      - curl
+      - wget
+      - unzip
+      - htop
+      - vim
+      - nodejs
+      - npm
+    state: present
+```

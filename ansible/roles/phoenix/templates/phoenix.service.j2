@@ -1,0 +1,20 @@
+```
+[Unit]
+Description={{ app_name }} Phoenix Application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/{{ app_name }}
+EnvironmentFile=/opt/{{ app_name }}/prod.env
+ExecStart=/opt/{{ app_name }}/_build/prod/rel/{{ app_name }}/bin/{{ app_name | replace('-', '_') }} start
+ExecStop=/opt/{{ app_name }}/_build/prod/rel/{{ app_name }}/bin/{{ app_name | replace('-', '_') }} stop
+Restart=on-failure
+RestartSec=5
+SyslogIdentifier={{ app_name }}
+
+[Install]
+WantedBy=multi-user.target
+```

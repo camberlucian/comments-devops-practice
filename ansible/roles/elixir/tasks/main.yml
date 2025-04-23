@@ -1,0 +1,34 @@
+```yaml
+---
+- name: Add Erlang Solutions repository
+  apt_repository:
+    repo: deb https://packages.erlang-solutions.com/ubuntu focal contrib
+    state: present
+    filename: erlang-solutions
+
+- name: Add Erlang Solutions key
+  apt_key:
+    url: https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install Erlang and Elixir
+  apt:
+    name:
+      - esl-erlang
+      - elixir
+    state: present
+
+- name: Install Hex package manager
+  command: mix local.hex --force
+  become: yes
+  become_user: ubuntu
+
+- name: Install Phoenix
+  command: mix archive.install hex phx_new --force
+  become: yes
+  become_user: ubuntu
+```
