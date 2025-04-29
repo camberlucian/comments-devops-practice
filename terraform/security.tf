@@ -1,4 +1,3 @@
-```hcl
 # Security Group for EC2
 resource "aws_security_group" "app" {
   name        = "${var.app_name}-app-sg"
@@ -66,4 +65,3 @@ resource "aws_security_group" "db" {
     Name = "${var.app_name}-db-sg"
   }
 }
-```

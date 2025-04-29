@@ -1,4 +1,3 @@
-```hcl
 provider "aws" {
   region = var.aws_region
 }
@@ -58,13 +57,29 @@ resource "aws_route_table_association" "public" {
 }
 
 # EC2 Instance
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+  
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  
+  owners = ["099720109477"] # Canonical
+}
+
 resource "aws_instance" "app_server" {
-  ami                    = "ami-0c7217cdde317cfec" # Ubuntu 22.04 LTS (update as needed)
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.ec2_instance_type
   key_name               = var.ssh_key_name
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.app.id]
-
+  
   root_block_device {
     volume_size = 20
     volume_type = "gp3"
@@ -90,7 +105,7 @@ resource "aws_db_instance" "postgres" {
   allocated_storage      = 20
   storage_type           = "gp2"
   engine                 = "postgres"
-  engine_version         = "14.7"
+  engine_version         = "16.8"
   instance_class         = var.db_instance_class
   db_name                = var.db_name
   username               = var.db_username
@@ -112,4 +127,3 @@ resource "aws_eip" "app" {
     Name = "${var.app_name}-eip"
   }
 }
-```

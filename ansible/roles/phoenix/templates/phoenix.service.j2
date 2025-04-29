@@ -1,4 +1,3 @@
-```
 [Unit]
 Description={{ app_name }} Phoenix Application
 After=network.target
@@ -9,12 +8,11 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory=/opt/{{ app_name }}
 EnvironmentFile=/opt/{{ app_name }}/prod.env
-ExecStart=/opt/{{ app_name }}/_build/prod/rel/{{ app_name }}/bin/{{ app_name | replace('-', '_') }} start
-ExecStop=/opt/{{ app_name }}/_build/prod/rel/{{ app_name }}/bin/{{ app_name | replace('-', '_') }} stop
+ExecStart=/opt/comments-app/_build/prod/rel/comments_app/bin/comments_app start
+ExecStop=/opt/comments-app/_build/prod/rel/comments_app/bin/comments_app stop
 Restart=on-failure
 RestartSec=5
 SyslogIdentifier={{ app_name }}
 
 [Install]
 WantedBy=multi-user.target
-```

@@ -1,4 +1,3 @@
-```yaml
 ---
 - name: Create deployment directory
   file:
@@ -10,7 +9,7 @@
 
 - name: Clone application repository
   git:
-    repo: https://github.com/yourusername/{{ app_name }}.git
+    repo: https://github.com/camberlucian/comments-devops-practice.git
     dest: /opt/{{ app_name }}
     version: main
   become: yes
@@ -26,35 +25,44 @@
 
 - name: Install dependencies
   shell: |
-    cd /opt/{{ app_name }} && \
-    mix deps.get --only prod
+    cd /opt/{{ app_name }} && mix deps.get --only prod
+  become: yes
+  become_user: ubuntu
+  environment:
+    PATH: "/home/ubuntu/.asdf/shims:/home/ubuntu/.asdf/bin:{{ ansible_env.PATH }}"
+
+- name: Check if package.json exists in assets directory
+  stat:
+    path: /opt/{{ app_name }}/assets/package.json
+  register: package_json
   become: yes
   become_user: ubuntu
 
 - name: Install Node.js dependencies
   shell: |
-    cd /opt/{{ app_name }}/assets && \
-    npm install
+    cd /opt/{{ app_name }}/assets && npm install
   become: yes
   become_user: ubuntu
+  when: package_json.stat.exists
 
 - name: Compile assets
   shell: |
-    cd /opt/{{ app_name }} && \
-    mix assets.deploy
+    cd /opt/{{ app_name }} && mix assets.deploy
   environment:
     MIX_ENV: prod
+    PATH: "/home/ubuntu/.asdf/shims:/home/ubuntu/.asdf/bin:{{ ansible_env.PATH }}"
   become: yes
   become_user: ubuntu
 
 - name: Create release
   shell: |
-    cd /opt/{{ app_name }} && \
-    mix phx.gen.release && \
-    MIX_ENV=prod mix release
+    cd /opt/{{ app_name }} && mix phx.gen.release && mix release --overwrite
   become: yes
   become_user: ubuntu
-
+  environment:
+    MIX_ENV: prod
+    PATH: "/home/ubuntu/.asdf/shims:/home/ubuntu/.asdf/bin:{{ ansible_env.PATH }}"
+    
 - name: Create systemd service
   template:
     src: phoenix.service.j2
@@ -67,4 +75,3 @@
     enabled: yes
     state: started
     daemon_reload: yes
-```

@@ -12,7 +12,16 @@ import Config
 config :comments_app, CommentsAppWeb.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger, level: :debug
+
+config :comments_app, CommentsApp.Repo,
+  url: System.get_env("DATABASE_URL"),
+  ssl: true,
+  pool_size: 10,
+  ssl_opts: [
+    verify: :verify_peer,
+    cacertfile: "/etc/ssl/certs/global-bundle.pem"
+  ]
 
 # ## SSL Support
 #
