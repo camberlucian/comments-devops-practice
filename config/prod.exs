@@ -23,6 +23,13 @@ config :comments_app, CommentsApp.Repo,
     cacertfile: "/etc/ssl/certs/global-bundle.pem"
   ]
 
+
+config :comments_app, CommentsAppWeb.Endpoint,
+  http: [ip: {0, 0, 0, 0}, port: 4000],
+  url: [host: "3.140.116.92", port: 4000],
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  server: true
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
