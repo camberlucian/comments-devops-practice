@@ -1,0 +1,125 @@
+- hosts: all
+  become: yes
+  tasks:
+    # Ensure system is up-to-date
+    - name: Update all system packages
+      apt:
+        update_cache: yes
+        upgrade: full
+
+    # Install essential dependencies
+    - name: Install system dependencies
+      apt:
+        name:
+          - build-essential
+          - git
+          - curl
+          - libssl-dev
+          - libreadline-dev
+          - zlib1g-dev
+          - postgresql-client
+          - ufw
+        state: present
+
+    # Set up asdf for version management
+    - name: Install asdf
+      git:
+        repo: "https://github.com/asdf-vm/asdf.git"
+        dest: /opt/asdf
+        version: v0.10.0
+
+    - name: Configure asdf in PATH
+      lineinfile:
+        path: /etc/profile.d/asdf.sh
+        line: 'export PATH="/opt/asdf/bin:/opt/asdf/shims:$PATH"'
+        state: present
+
+    # Install Erlang using asdf
+    - name: Install Erlang using asdf
+      shell: |
+        asdf plugin-add erlang
+        asdf install erlang 24.0
+        asdf global erlang 24.0
+
+    # Install Elixir using asdf
+    - name: Install Elixir using asdf
+      shell: |
+        asdf plugin-add elixir
+        asdf install elixir 1.12.3
+        asdf global elixir 1.12.3
+
+    # Install rebar and rebar3 using asdf
+    - name: Install rebar and rebar3 using asdf
+      shell: |
+        asdf plugin-add rebar
+        asdf install rebar latest
+        asdf global rebar latest
+        asdf plugin-add rebar3
+        asdf install rebar3 latest
+        asdf global rebar3 latest
+
+    # Verify rebar installation
+    - name: Verify rebar installation
+      shell: |
+        rebar --version
+        rebar3 --version
+
+    # Set firewall rules using ufw
+    - name: Configure firewall for PostgreSQL and Phoenix app
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      with_items:
+        - 4000  # Phoenix app
+        - 5432  # PostgreSQL database
+
+    - name: Enable firewall
+      ufw:
+        state: enabled
+
+    # Set environment variables for Phoenix app
+    - name: Set environment variables
+      lineinfile:
+        path: /etc/environment
+        create: yes
+        line: |
+          DATABASE_URL=postgres://admin:your-secure-password@your-db-endpoint:5432/comments_app?sslmode=require
+          PORT=4000
+        state: present
+
+    # Clone Phoenix app repository
+    - name: Clone Phoenix app repository
+      git:
+        repo: "your-git-repo-url"
+        dest: /home/ec2-user/comments_app
+
+    # Install Phoenix dependencies
+    - name: Install Phoenix dependencies
+      shell: MIX_ENV=prod mix deps.get
+      args:
+        chdir: /home/ec2-user/comments_app
+
+    # Run Ecto migrations
+    - name: Run Ecto migrations
+      shell: MIX_ENV=prod mix ecto.migrate
+      args:
+        chdir: /home/ec2-user/comments_app
+
+    # Build Phoenix release
+    - name: Build Phoenix release
+      shell: MIX_ENV=prod mix release
+      args:
+        chdir: /home/ec2-user/comments_app
+
+    # Start Phoenix application
+    - name: Start Phoenix application
+      shell: |
+        PORT=4000 DATABASE_URL=postgres://admin:your-secure-password@your-db-endpoint:5432/comments_app?sslmode=require _build/prod/rel/comments_app/bin/comments_app start
+      args:
+        chdir: /home/ec2-user/comments_app
+
+    # Verify PostgreSQL connection (optional, for debugging purposes)
+    - name: Verify PostgreSQL connection
+      shell: |
+        psql "sslmode=require host=your-db-endpoint user=admin password=your-secure-password"

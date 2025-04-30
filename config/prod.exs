@@ -14,21 +14,6 @@ config :comments_app, CommentsAppWeb.Endpoint, cache_static_manifest: "priv/stat
 # Do not print debug messages in production
 config :logger, level: :debug
 
-config :comments_app, CommentsApp.Repo,
-  url: System.get_env("DATABASE_URL"),
-  ssl: true,
-  pool_size: 10,
-  ssl_opts: [
-    verify: :verify_peer,
-    cacertfile: "/etc/ssl/certs/global-bundle.pem"
-  ]
-
-
-config :comments_app, CommentsAppWeb.Endpoint,
-  http: [ip: {0, 0, 0, 0}, port: 4000],
-  url: [host: "3.140.116.92", port: 4000],
-  cache_static_manifest: "priv/static/cache_manifest.json",
-  server: true
 
 # ## SSL Support
 #

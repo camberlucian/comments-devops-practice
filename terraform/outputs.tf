@@ -1,25 +1,9 @@
-output "app_public_ip" {
-  value = aws_eip.app.public_ip
-}
-
-output "app_public_dns" {
-  value = aws_instance.app_server.public_dns
+output "app_instance_public_ip" {
+  description = "The public IP of the EC2 instance running the app"
+  value       = aws_instance.app.public_ip
 }
 
 output "db_endpoint" {
-  value = aws_db_instance.postgres.endpoint
-}
-
-output "db_name" {
-  value = aws_db_instance.postgres.db_name
-}
-
-output "db_username" {
-  value = var.db_username
-  sensitive = true
-}
-
-output "db_password" {
-  value = var.db_password
-  sensitive = true
+  description = "The endpoint of the RDS PostgreSQL database"
+  value       = aws_db_instance.postgres.endpoint
 }
